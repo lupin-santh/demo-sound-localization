@@ -1,10 +1,10 @@
 [简体中文](README_ZH.md)
 
-# Sound Direction
+# Sound Localization
 
-A local voice-direction and offline multilingual transcription application for the **Quectel PI M2** and **Quectel VA60X-GL** six-microphone array.
+A local voice-localization and offline multilingual transcription application for the **Quectel PI M2** and **Quectel VA60X-GL** six-microphone array.
 
-In the current default mode, the live pointer updates after about 0.16 seconds of valid voice-direction evidence, without waiting for transcription. While VAD continues to detect speech, the last stable direction remains visible through brief gaps in valid localization frames. SenseVoice transcribes in the background and attaches the utterance's direction to its text; when it is unknown, the UI shows only the transcript. Audio and transcripts stay on the device.
+In the current default mode, the live pointer updates after about 0.16 seconds of valid voice-localization evidence, without waiting for transcription. While VAD continues to detect speech, the last stable localization remains visible through brief gaps in valid localization frames. SenseVoice transcribes in the background and attaches the utterance's localization to its text; when it is unknown, the UI shows only the transcript. Audio and transcripts stay on the device.
 
 ![Sound Localization v2.0 interface](images/sound-localization-v2.0.png)
 
@@ -14,9 +14,9 @@ In the current default mode, the live pointer updates after about 0.16 seconds o
 - Horizontal GCC-PHAT / SRP localization using six physical microphones; the empty and loopback channels are excluded.
 - Majority-vote WebRTC VAD across three spaced microphones for speech confirmation and utterance segmentation.
 - Offline SenseVoice INT8 recognition; the current configuration fixes Chinese (`zh`), and `auto` enables model-supported language detection.
-- Live voice direction uses a short circular average, a ±55° direction lock, large-jump confirmation, and a 0.4-second hold after speech.
-- A sustained off-lock candidate can take over without a VAD silence gap after at least 0.4 seconds of evidence, a 75% share of recent valid direction frames, and circular concentration of 0.85. When the old direction has at most one valid frame in the latest 0.25 seconds, the concentration requirement relaxes to 0.80.
-- Each transcript separately aggregates the utterance direction into a 30° sector such as `[Direction ~060° ±15°] Hello`.
+- Live voice localization uses a short circular average, a ±55° localization lock, large-jump confirmation, and a 0.4-second hold after speech.
+- A sustained off-lock candidate can take over without a VAD silence gap after at least 0.4 seconds of evidence, a 75% share of recent valid localization frames, and circular concentration of 0.85. When the old localization has at most one valid frame in the latest 0.25 seconds, the concentration requirement relaxes to 0.80.
+- Each transcript separately aggregates the utterance localization into a 30° sector such as `[Localization ~060° ±15°] Hello`.
 - Chinese and English UI with persisted language and base-level gate settings.
 - A **Detect device again** action for USB reconnects and ALSA card-number changes.
 - Live capture diagnostics, eight-channel WAV replay, and a synthetic demo mode.
@@ -42,7 +42,7 @@ Keep `channels` set to `8`. The six microphones are reordered into their physica
 "mic_channels": [0, 4, 5, 1, 2, 3]
 ```
 
-The current geometry assumes MIC_1, MIC_2, MIC_4, MIC_5, MIC_6, and MIC_8 are clockwise at 60° intervals, with the MIC_1 radial direction defined as 0°. This software coordinate system is not necessarily the installed device's “front.” Calibrate it using a known source: use `angle_offset_deg` for global rotation and `mirror: true` if the angle direction is reversed. The current `radius_m: 0.035` is an estimate from board dimensions and should be replaced when exact microphone-center coordinates are available.
+The current geometry assumes MIC_1, MIC_2, MIC_4, MIC_5, MIC_6, and MIC_8 are clockwise at 60° intervals, with the MIC_1 radial localization defined as 0°. This software coordinate system is not necessarily the installed device's “front.” Calibrate it using a known source: use `angle_offset_deg` for global rotation and `mirror: true` if the angle localization is reversed. The current `radius_m: 0.035` is an estimate from board dimensions and should be replaced when exact microphone-center coordinates are available.
 
 ## Setup
 
@@ -78,7 +78,7 @@ bash run.sh                         # Full GUI: localization, VAD, offline ASR
 bash run.sh --probe --seconds 5     # Headless capture diagnostics as JSON
 bash run.sh --no-vad --no-asr      # Live localization without optional dependencies
 bash run.sh --wav recording.wav    # Replay 8ch/16kHz/S16_LE PCM WAV
-bash run.sh --demo                 # Synthetic direction demo without VAD/ASR
+bash run.sh --demo                 # Synthetic localization demo without VAD/ASR
 bash test.sh                       # Run all unit and integration tests
 ```
 
@@ -94,42 +94,42 @@ bash run.sh --probe --seconds 5
 
 Do not permanently configure a card number observed once, such as `hw:3,0`; it can change after a USB reconnect. With `device: auto`, the application resolves the card again from its VID:PID.
 
-## How Sentence Direction Is Produced
+## How Sentence Localization Is Produced
 
-Each 512-sample block is approximately 32 ms. The localizer evaluates all 15 microphone pairs with GCC-PHAT in the 250–4000 Hz speech band and scans 0–358° in 2° steps. A block contributes directional evidence only when all of these checks pass:
+Each 512-sample block is approximately 32 ms. The localizer evaluates all 15 microphone pairs with GCC-PHAT in the 250–4000 Hz speech band and scans 0–358° in 2° steps. A block contributes localizational evidence only when all of these checks pass:
 
 1. Majority-vote VAD reports speech.
 2. Speech-band level and signal-to-noise checks pass.
 3. The six-microphone aggregate level reaches the hard `gate_dbfs` threshold.
-4. The frame direction score reaches `min_confidence`.
+4. The frame localization score reaches `min_confidence`.
 
-The live pointer uses valid voice directions from the latest 0.25 seconds. It appears after at least 0.16 seconds of evidence with concentration of at least 0.7. Brief VAD dropouts can last up to 0.45 seconds without ending the tracked speech. Normal updates use frames within 55° of the locked direction. Frames outside that lock enter an independent 0.55-second handoff window and do not directly move the old pointer. A handoff requires at least 0.4 seconds of candidate evidence and at least 75% of recent valid direction frames. Its circular concentration must reach 0.85, or 0.80 when the old direction contributes at most one valid frame in the latest 0.25 seconds. Calibrated frames below 3 dB SNR do not move the pointer. It holds for 0.4 seconds after speech is confirmed to have ended and shows a default ±15° sector.
+The live pointer uses valid voice localizations from the latest 0.25 seconds. It appears after at least 0.16 seconds of evidence with concentration of at least 0.7. Brief VAD dropouts can last up to 0.45 seconds without ending the tracked speech. Normal updates use frames within 55° of the locked localization. Frames outside that lock enter an independent 0.55-second handoff window and do not directly move the old pointer. A handoff requires at least 0.4 seconds of candidate evidence and at least 75% of recent valid localization frames. Its circular concentration must reach 0.85, or 0.80 when the old localization contributes at most one valid frame in the latest 0.25 seconds. Calibrated frames below 3 dB SNR do not move the pointer. It holds for 0.4 seconds after speech is confirmed to have ended and shows a default ±15° sector.
 
-Each transcript independently combines valid directions across its utterance, weighted by duration and score. The current configuration requires at least 0.2 seconds of valid direction, at least 30% coverage of voiced duration, and concentration of at least 0.7. A passing result is rounded to the nearest 30° sector: 68° becomes `60° ±15°`, while 352° becomes `0° ±15°`. When a speaker moves, the current pointer can differ from a completed transcript's direction.
+Each transcript independently combines valid localizations across its utterance, weighted by duration and score. The current configuration requires at least 0.2 seconds of valid localization, at least 30% coverage of voiced duration, and concentration of at least 0.7. A passing result is rounded to the nearest 30° sector: 68° becomes `60° ±15°`, while 352° becomes `0° ±15°`. When a speaker moves, the current pointer can differ from a completed transcript's localization.
 
-Speech below the base gate may still be transcribed. Unknown-direction text appears without a direction label in the UI, while diagnostics are printed to the terminal by default. Set `direction_unknown_log_enabled` to `false` to disable that terminal output.
+Speech below the base gate may still be transcribed. Unknown-localization text appears without a localization label in the UI, while diagnostics are printed to the terminal by default. Set `localization_unknown_log_enabled` to `false` to disable that terminal output.
 
 ## Adjust the Gate
 
 Keep the room quiet for two to three seconds after startup so the application can learn the stable noise spectrum. Then speak at a normal level and expected distance. Place the base gate above ambient sound and below ordinary speech. If ambient sound is about -45 dBFS and speech is about -32 dBFS, start around -39 to -37 dBFS.
 
 - A more negative value such as -40 is more sensitive, but accepts more noise.
-- A value closer to zero such as -30 is stricter and produces more unknown directions.
+- A value closer to zero such as -30 is stricter and produces more unknown localizations.
 - The pink level-meter line is the base gate; **Save** writes it to `config.json`.
-- The adaptive speech gate helps VAD but never replaces the hard direction-evidence gate.
+- The adaptive speech gate helps VAD but never replaces the hard localization-evidence gate.
 
-## Why “Direction unknown” Appears
+## Why “Localization unknown” Appears
 
 It means the full evidence chain did not pass, rather than identifying one specific fault. Diagnose it in this order:
 
 1. Run `--probe` and verify that all six microphone channels have plausible levels. Software indices 6 and 7 must not be used as microphones.
-2. If ordinary speech often stays below the current `gate_dbfs: -40`, adjust the gate in small steps and see whether the direction stabilizes.
-3. Very short words may not meet `asr_direction_min_seconds: 0.2`; compare using a complete sentence.
-4. Reverberation, simultaneous speakers, playback, or a moving source may fail `asr_direction_min_consistency: 0.7`.
-5. Too few valid frames may fail `asr_direction_min_coverage: 0.3`.
-6. If channel order, 0°, or clockwise direction is wrong, calibrate the geometry before relaxing consistency thresholds.
+2. If ordinary speech often stays below the current `gate_dbfs: -40`, adjust the gate in small steps and see whether the localization stabilizes.
+3. Very short words may not meet `asr_localization_min_seconds: 0.2`; compare using a complete sentence.
+4. Reverberation, simultaneous speakers, playback, or a moving source may fail `asr_localization_min_consistency: 0.7`.
+5. Too few valid frames may fail `asr_localization_min_coverage: 0.3`.
+6. If channel order, 0°, or clockwise localization is wrong, calibrate the geometry before relaxing consistency thresholds.
 
-Change one parameter at a time and keep source direction, distance, and voice level comparable.
+Change one parameter at a time and keep source localization, distance, and voice level comparable.
 
 ## Configuration Reference
 
@@ -142,26 +142,26 @@ Change one parameter at a time and keep source direction, distance, and voice le
 | `frame_size` | `512` | Per-channel samples in each localization block |
 | `mic_channels` | `[0,4,5,1,2,3]` | Software indices in physical ring order |
 | `radius_m` | `0.035` | Estimated microphone-ring radius in metres |
-| `gate_dbfs` | `-40` | Hard gate for sentence-direction evidence |
-| `min_confidence` | `0.2` | Per-block heuristic direction-score threshold, not an accuracy probability |
+| `gate_dbfs` | `-40` | Hard gate for sentence-localization evidence |
+| `min_confidence` | `0.2` | Per-block heuristic localization-score threshold, not an accuracy probability |
 | `angle_offset_deg` | `0` | Global display rotation |
-| `mirror` | `false` | Reverse the angle direction |
+| `mirror` | `false` | Reverse the angle localization |
 | `hold_seconds` | `0.55` | Original tracker hold used without VAD or in demo mode |
-| `live_direction_window_seconds` | `0.25` | Rolling window for live voice direction |
-| `live_direction_min_seconds` | `0.16` | Valid audio duration required before the live pointer appears |
-| `live_direction_min_consistency` | `0.7` | Minimum circular concentration in the live window |
-| `live_direction_hold_seconds` | `0.4` | Short hold after speech is confirmed to have ended |
-| `live_direction_speech_gap_seconds` | `0.45` | Grace period for brief VAD dropouts during speech |
-| `live_direction_jump_confirm_seconds` | `0.35` | Continuous evidence needed for a large direction change |
-| `live_direction_min_snr_db` | `3.0` | Minimum calibrated SNR for a live direction frame |
-| `live_direction_lock_degrees` | `55.0` | Maximum deviation from the first direction during continuous speech |
-| `live_direction_handoff_window_seconds` | `0.55` | Window for directions outside the current lock |
-| `live_direction_handoff_min_seconds` | `0.4` | Minimum valid audio duration before a handoff |
-| `live_direction_handoff_min_consistency` | `0.85` | Minimum circular concentration of a new direction |
-| `live_direction_handoff_relaxed_consistency` | `0.8` | Handoff concentration when recent old-direction evidence is sparse |
-| `live_direction_handoff_min_share` | `0.75` | Minimum share of recent valid direction evidence from the candidate |
-| `live_direction_handoff_old_evidence_window_seconds` | `0.25` | Recent window for old-direction evidence |
-| `live_direction_handoff_old_evidence_max_frames` | `1` | Maximum old-direction valid frames allowing the relaxed threshold |
+| `live_localization_window_seconds` | `0.25` | Rolling window for live voice localization |
+| `live_localization_min_seconds` | `0.16` | Valid audio duration required before the live pointer appears |
+| `live_localization_min_consistency` | `0.7` | Minimum circular concentration in the live window |
+| `live_localization_hold_seconds` | `0.4` | Short hold after speech is confirmed to have ended |
+| `live_localization_speech_gap_seconds` | `0.45` | Grace period for brief VAD dropouts during speech |
+| `live_localization_jump_confirm_seconds` | `0.35` | Continuous evidence needed for a large localization change |
+| `live_localization_min_snr_db` | `3.0` | Minimum calibrated SNR for a live localization frame |
+| `live_localization_lock_degrees` | `55.0` | Maximum deviation from the first localization during continuous speech |
+| `live_localization_handoff_window_seconds` | `0.55` | Window for localizations outside the current lock |
+| `live_localization_handoff_min_seconds` | `0.4` | Minimum valid audio duration before a handoff |
+| `live_localization_handoff_min_consistency` | `0.85` | Minimum circular concentration of a new localization |
+| `live_localization_handoff_relaxed_consistency` | `0.8` | Handoff concentration when recent old-localization evidence is sparse |
+| `live_localization_handoff_min_share` | `0.75` | Minimum share of recent valid localization evidence from the candidate |
+| `live_localization_handoff_old_evidence_window_seconds` | `0.25` | Recent window for old-localization evidence |
+| `live_localization_handoff_old_evidence_max_frames` | `1` | Maximum old-localization valid frames allowing the relaxed threshold |
 | `vad_mode` | `2` | WebRTC VAD aggressiveness, 0–3; higher is stricter |
 | `vad_channel` | `0` | Starting physical microphone for the three VAD selections |
 | `asr_language` | `zh` | Currently fixed to Chinese; may be set to `auto` or `en` |
@@ -170,11 +170,11 @@ Change one parameter at a time and keep source direction, distance, and voice le
 | `asr_silence_seconds` | `0.6` | Continuous silence that ends an utterance |
 | `asr_min_speech_seconds` | `0.24` | Minimum speech duration for an utterance |
 | `asr_max_seconds` | `5` | Maximum duration of one recognition segment; configurable up to 30 seconds |
-| `asr_direction_min_seconds` | `0.2` | Minimum valid direction duration per utterance |
-| `asr_direction_min_coverage` | `0.3` | Minimum valid-direction share of voiced duration |
-| `asr_direction_min_consistency` | `0.7` | Minimum circular concentration within an utterance |
-| `direction_unknown_log_enabled` | `true` | Print detailed unknown-direction diagnostics to the terminal |
-| `direction_sector_deg` | `30` | Live pointer range and transcript sector width, currently ±15° |
+| `asr_localization_min_seconds` | `0.2` | Minimum valid localization duration per utterance |
+| `asr_localization_min_coverage` | `0.3` | Minimum valid-localization share of voiced duration |
+| `asr_localization_min_consistency` | `0.7` | Minimum circular concentration within an utterance |
+| `localization_unknown_log_enabled` | `true` | Print detailed unknown-localization diagnostics to the terminal |
+| `localization_sector_deg` | `30` | Live pointer range and transcript sector width, currently ±15° |
 
 ## Troubleshooting
 
@@ -205,11 +205,11 @@ The background queue can hold at most two utterances. When inference cannot keep
 .venv/bin/python scripts/transcribe.py --file your.wav --channel 0 --segment
 ```
 
-This accepts mono or multichannel 16-bit PCM WAV. Use `--segment` for long recordings. A mono file has no array geometry, so this command transcribes it without estimating direction.
+This accepts mono or multichannel 16-bit PCM WAV. Use `--segment` for long recordings. A mono file has no array geometry, so this command transcribes it without estimating localization.
 
 ## Project Layout
 
-- `sound_direction/`: capture, localization, speech detection, ASR, UI, and translation modules.
+- `sound_localization/`: capture, localization, speech detection, ASR, UI, and translation modules.
 - `tests/`: unit tests and optional real-model integration tests.
 - `docs/`: fresh-board deployment guide.
 - `README_ZH.md`: Simplified Chinese project guide.

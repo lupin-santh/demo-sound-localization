@@ -1,6 +1,6 @@
 [English](README.md)
 
-# 声向 · Sound Direction
+# 声向 · Sound Localization
 
 面向 **Quectel PI M2** 与 **Quectel VA60X-GL** 六麦阵列板的本地人声方向定位和中英文离线转写应用。
 
@@ -107,7 +107,7 @@ bash run.sh --probe --seconds 5
 
 转写条目的方向独立按整段有效时长和评分做圆周加权平均。当前配置要求：有效方向累计至少 0.2 秒、覆盖语音时长至少 30%、圆周集中程度至少 0.7。通过后，结果四舍五入到最近的 30° 扇区；例如 68° 显示为 `60° ±15°`，352° 显示为 `0° ±15°`。说话者移动时，当前指针与已完成片段的方向可能不同。
 
-低于基础门限的语音仍可进入 ASR；方向未知时，界面只显示转写文字，终端默认输出方向证据诊断。将 `direction_unknown_log_enabled` 设为 `false` 可关闭该日志。
+低于基础门限的语音仍可进入 ASR；方向未知时，界面只显示转写文字，终端默认输出方向证据诊断。将 `localization_unknown_log_enabled` 设为 `false` 可关闭该日志。
 
 ## 门限调节
 
@@ -124,9 +124,9 @@ bash run.sh --probe --seconds 5
 
 1. 用 `--probe` 确认六个有效通道都有合理电平，程序索引 6、7 不应被当作麦克风。
 2. 正常说话时若综合电平经常低于当前 `gate_dbfs: -40`，可小幅调整门限并观察方向显示是否改善。
-3. 短词可能达不到 `asr_direction_min_seconds: 0.2`；连续说完整一句再比较。
-4. 混响、多个人同时说话、播放声和移动声源会降低 `asr_direction_min_consistency: 0.7`。
-5. 说话片段中有效定位过少会低于 `asr_direction_min_coverage: 0.3`。
+3. 短词可能达不到 `asr_localization_min_seconds: 0.2`；连续说完整一句再比较。
+4. 混响、多个人同时说话、播放声和移动声源会降低 `asr_localization_min_consistency: 0.7`。
+5. 说话片段中有效定位过少会低于 `asr_localization_min_coverage: 0.3`。
 6. 通道顺序、0° 方位或顺逆时针假设错误时，先做几何标定，不要用降低一致性门限掩盖映射问题。
 
 需要调试时一次只修改一个参数，并保留同一距离、同一方向和近似音量作为对照。
@@ -147,21 +147,21 @@ bash run.sh --probe --seconds 5
 | `angle_offset_deg` | `0` | 显示方向整体旋转角度 |
 | `mirror` | `false` | 翻转角度增长方向 |
 | `hold_seconds` | `0.55` | 无 VAD 或演示模式使用的原有跟踪器保持时间 |
-| `live_direction_window_seconds` | `0.25` | 实时人声方向的滚动观察窗口 |
-| `live_direction_min_seconds` | `0.16` | 首次显示实时方向所需的有效音频时长 |
-| `live_direction_min_consistency` | `0.7` | 实时窗口内的最小方向集中程度 |
-| `live_direction_hold_seconds` | `0.4` | 确认语音结束后的短时保持 |
-| `live_direction_speech_gap_seconds` | `0.45` | 允许连续说话中短暂 VAD 掉票的时长 |
-| `live_direction_jump_confirm_seconds` | `0.35` | 大角度跳变需稳定持续的时长 |
-| `live_direction_min_snr_db` | `3.0` | 已建立噪声模型时，实时方向帧的最低信噪比 |
-| `live_direction_lock_degrees` | `55.0` | 连续语音期间相对首次方向的最大允许偏移 |
-| `live_direction_handoff_window_seconds` | `0.55` | 锁定范围外候选方向的观察窗口 |
-| `live_direction_handoff_min_seconds` | `0.4` | 确认新方向至少需要的有效音频时长 |
-| `live_direction_handoff_min_consistency` | `0.85` | 新方向候选的最小圆周集中程度 |
-| `live_direction_handoff_relaxed_consistency` | `0.8` | 旧方向近期缺少合格帧时的交接一致性门槛 |
-| `live_direction_handoff_min_share` | `0.75` | 新方向证据占近期合格方向证据的最低比例 |
-| `live_direction_handoff_old_evidence_window_seconds` | `0.25` | 判断旧方向近期合格帧的观察窗口 |
-| `live_direction_handoff_old_evidence_max_frames` | `1` | 使用宽松门槛时，窗口内允许的旧方向合格帧数上限 |
+| `live_localization_window_seconds` | `0.25` | 实时人声方向的滚动观察窗口 |
+| `live_localization_min_seconds` | `0.16` | 首次显示实时方向所需的有效音频时长 |
+| `live_localization_min_consistency` | `0.7` | 实时窗口内的最小方向集中程度 |
+| `live_localization_hold_seconds` | `0.4` | 确认语音结束后的短时保持 |
+| `live_localization_speech_gap_seconds` | `0.45` | 允许连续说话中短暂 VAD 掉票的时长 |
+| `live_localization_jump_confirm_seconds` | `0.35` | 大角度跳变需稳定持续的时长 |
+| `live_localization_min_snr_db` | `3.0` | 已建立噪声模型时，实时方向帧的最低信噪比 |
+| `live_localization_lock_degrees` | `55.0` | 连续语音期间相对首次方向的最大允许偏移 |
+| `live_localization_handoff_window_seconds` | `0.55` | 锁定范围外候选方向的观察窗口 |
+| `live_localization_handoff_min_seconds` | `0.4` | 确认新方向至少需要的有效音频时长 |
+| `live_localization_handoff_min_consistency` | `0.85` | 新方向候选的最小圆周集中程度 |
+| `live_localization_handoff_relaxed_consistency` | `0.8` | 旧方向近期缺少合格帧时的交接一致性门槛 |
+| `live_localization_handoff_min_share` | `0.75` | 新方向证据占近期合格方向证据的最低比例 |
+| `live_localization_handoff_old_evidence_window_seconds` | `0.25` | 判断旧方向近期合格帧的观察窗口 |
+| `live_localization_handoff_old_evidence_max_frames` | `1` | 使用宽松门槛时，窗口内允许的旧方向合格帧数上限 |
 | `vad_mode` | `2` | WebRTC VAD 严格度，范围 0–3，数值越大越严格 |
 | `vad_channel` | `0` | 三路 VAD 选点的起始物理麦克风 |
 | `asr_language` | `zh` | 当前固定中文；也可设为 `auto` 或 `en` |
@@ -170,11 +170,11 @@ bash run.sh --probe --seconds 5
 | `asr_silence_seconds` | `0.6` | 判定句尾的连续静音 |
 | `asr_min_speech_seconds` | `0.24` | 丢弃过短触发片段的下限 |
 | `asr_max_seconds` | `5` | 单个识别片段最大时长；允许配置到 30 秒 |
-| `asr_direction_min_seconds` | `0.2` | 一句话所需的最短有效方向时长 |
-| `asr_direction_min_coverage` | `0.3` | 有效方向占语音时长的最低比例 |
-| `asr_direction_min_consistency` | `0.7` | 句内方向圆周集中程度下限 |
-| `direction_unknown_log_enabled` | `true` | 是否在终端输出方向未知的详细诊断 |
-| `direction_sector_deg` | `30` | 实时指针范围和转写方向扇区宽度，当前为 ±15° |
+| `asr_localization_min_seconds` | `0.2` | 一句话所需的最短有效方向时长 |
+| `asr_localization_min_coverage` | `0.3` | 有效方向占语音时长的最低比例 |
+| `asr_localization_min_consistency` | `0.7` | 句内方向圆周集中程度下限 |
+| `localization_unknown_log_enabled` | `true` | 是否在终端输出方向未知的详细诊断 |
+| `localization_sector_deg` | `30` | 实时指针范围和转写方向扇区宽度，当前为 ±15° |
 
 ## 常见问题
 
@@ -209,7 +209,7 @@ bash run.sh --probe --seconds 5
 
 ## 项目结构
 
-- `sound_direction/`：采集、定位、人声检测、ASR、界面与翻译模块。
+- `sound_localization/`：采集、定位、人声检测、ASR、界面与翻译模块。
 - `tests/`：单元测试及可选的真实模型集成测试。
 - `docs/`：全新开发板部署说明。
 - `README.md`：英文主项目说明。
