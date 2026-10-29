@@ -1,7 +1,7 @@
 import json
 import unittest
 import numpy as np
-from app import synthetic
+from src.app import synthetic
 from sound_direction.speech import SpeechDetector, ArraySpeechDetector, Pipeline
 
 

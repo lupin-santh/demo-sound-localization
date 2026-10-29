@@ -7,7 +7,7 @@ import time
 from types import SimpleNamespace
 import unittest
 
-from app import Application
+from src.app import Application
 from sound_direction.i18n import STRINGS
 
 

@@ -213,7 +213,7 @@ This accepts mono or multichannel 16-bit PCM WAV. Use `--segment` for long recor
 - `tests/`: unit tests and optional real-model integration tests.
 - `docs/`: fresh-board deployment guide.
 - `README_ZH.md`: Simplified Chinese project guide.
-- `app.py`: desktop application and probe entry point.
+- `src/app.py`: desktop application and probe entry point.
 - `scripts/`: fresh-board deployment and standalone WAV transcription tools.
 - `run.sh` / `test.sh` / `env.sh`: launch, test, and environment scripts.
 - `config.json`: hardware, localization, VAD, ASR, and display settings.

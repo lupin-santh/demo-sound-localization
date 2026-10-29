@@ -213,7 +213,7 @@ bash run.sh --probe --seconds 5
 - `tests/`：单元测试及可选的真实模型集成测试。
 - `docs/`：全新开发板部署说明。
 - `README.md`：英文主项目说明。
-- `app.py`：桌面应用与探针入口。
+- `src/app.py`：桌面应用与探针入口。
 - `scripts/`：开发板部署与独立 WAV 转写工具。
 - `run.sh` / `test.sh` / `env.sh`：启动、测试和环境脚本。
 - `config.json`：硬件、定位、VAD、ASR 与显示参数。

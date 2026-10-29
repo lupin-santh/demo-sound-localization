@@ -1,7 +1,7 @@
 import json
 import unittest
 import numpy as np
-from app import synthetic
+from src.app import synthetic
 from sound_direction.localization import Localizer, Tracker, validate
 
 

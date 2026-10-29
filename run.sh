@@ -28,4 +28,4 @@ if [[ " $* " != *" --probe "* ]]; then
     fi
   fi
 fi
-exec "$task_python" app.py "$@"
+exec "$task_python" -m src.app "$@"

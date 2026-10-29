@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sound Direction: local desktop direction and speech visualizer for VA60X-GL."""
+"""Sound Direction desktop direction and speech visualizer for VA60X-GL."""
 import argparse
 import json
 import math
@@ -20,6 +20,9 @@ from sound_direction.live_direction import LiveDirection
 from sound_direction.speech import Pipeline
 from sound_direction.asr import AsrService, UtteranceSegmenter, direction_sector, validate_asr
 from sound_direction.i18n import translate
+
+
+ROOT = Path(__file__).resolve().parent.parent
 
 
 def format_direction_unknown(event, cfg):
@@ -460,7 +463,7 @@ class Application:
 
 def main():
     parser = argparse.ArgumentParser(description='Quectel VA60X-GL voice direction and offline transcription')
-    parser.add_argument('--config', default='config.json')
+    parser.add_argument('--config', default=str(ROOT/'config.json'))
     parser.add_argument('--device', help='ALSA hardware device override, e.g. hw:3,0')
     sources = parser.add_mutually_exclusive_group()
     sources.add_argument('--demo', action='store_true', help='Synthetic audio demo')
